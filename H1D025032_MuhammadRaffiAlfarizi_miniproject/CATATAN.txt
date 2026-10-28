@@ -1,0 +1,36 @@
+CATATAN RANCANGAN GOTEMU
+
+1. Pemetaan dari SRS ke mini project
+   - FR-02, FR-03: tambah.php mencatat barang dan menerbitkan Nomor Kasus format GT-TAHUN-0001
+     (id AUTO_INCREMENT menjamin keunikan, diisi dalam satu transaksi).
+   - FR-04: detail.php menampilkan kasus berdasarkan id.
+   - FR-06: kolom lokasi_simpan, wajib untuk status Ditemukan, hanya tampil untuk admin.
+   - FR-11, FR-13, BR-02: kontak dan lokasi penyimpanan hanya dirender untuk admin.
+     Anggota tidak pernah menerima markup tersebut.
+   - Entitas SRS "Hilang/Ditemukan" dipakai sebagai kolom status (ENUM), sesuai aturan khusus tema.
+
+2. Aturan validasi
+   Umum   : nama barang 3-150 karakter; kategori dan status white list ENUM; deskripsi maks 2000;
+            tanggal valid dan tidak di masa depan; kontak 5-60 karakter.
+   Khusus : status = Ditemukan -> lokasi wajib minimal 10 karakter (aturan silang tema Lost and Found).
+            status = Ditemukan -> lokasi penyimpanan wajib (SRS FR-06).
+            status = Hilang    -> lokasi boleh kosong; lokasi_simpan diabaikan.
+
+3. Keamanan
+   - Semua kueri berinput memakai prepared statement (prepare, bind_param, execute).
+   - Semua keluaran HTML dibungkus e() (htmlspecialchars).
+   - Sandi disimpan dengan password_hash dan diperiksa dengan password_verify.
+   - Pesan login sama untuk akun tidak ada dan sandi salah; hash palsu menyamakan waktu respons.
+   - session_regenerate_id(true) setelah login; cookie session httponly dan samesite.
+   - Token CSRF pada semua formulir POST (tambahan di luar spesifikasi).
+   - Halaman tambah dijaga wajib_admin(): anggota mendapat respons 403.
+   - Detail memvalidasi id sebagai integer dan mengikatnya sebagai tipe i.
+   - Error basis data ditulis ke log/error.log; pengguna hanya melihat pesan umum.
+
+4. Di luar cakupan (sengaja tidak dibuat, sesuai lembar spesifikasi)
+   Update, Delete, pencarian, pagination, OOP, AJAX. Dari SRS belum diterapkan: pembaruan status kasus
+   (Diterima, Dalam Penanganan, dst.), verifikasi klaim, serah terima, rekap, dan eskalasi.
+   Struktur sudah disiapkan agar mudah dilanjutkan pada Pertemuan 9.
+
+5. Data awal
+   Lima kasus pada app.sql adalah data contoh fiktif untuk keperluan uji.
